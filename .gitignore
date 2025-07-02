@@ -1,3 +1,17 @@
-# target
+# idea
+.idea/
 
+# mvm
+.mvn
+
+# gitattributes
+.gitattributes/
+
+# mvnw.cmd
+mvnw.cmd/
+
+# HELP.md
+HELP.md
+
+# target
 target/

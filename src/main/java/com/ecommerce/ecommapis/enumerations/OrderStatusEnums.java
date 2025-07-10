@@ -1,6 +1,6 @@
 package com.ecommerce.ecommapis.enumerations;
 
-public enum OrderStatus
+public enum OrderStatusEnums
 {
     PENDING,
     PLACED,

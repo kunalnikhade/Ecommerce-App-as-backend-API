@@ -49,4 +49,12 @@ public class CartController
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+    @DeleteMapping(value = "/clear/{cartId}")
+    public ResponseEntity<Void> clearCart(@PathVariable final UUID cartId)
+    {
+        cartService.clearCartByCartId(cartId);
+
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }

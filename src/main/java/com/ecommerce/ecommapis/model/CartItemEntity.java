@@ -1,16 +1,14 @@
 package com.ecommerce.ecommapis.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.UUID;
 
 @Entity
 @Table(name = "cart_items")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -21,7 +19,9 @@ public class CartItemEntity
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cart_id")
+    @JoinColumn(
+            name = "cart_id",
+            nullable = false)
     private CartEntity cart;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -12,10 +12,7 @@ import com.ecommerce.ecommapis.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class OrderService
@@ -117,12 +114,31 @@ public class OrderService
     }
 
     @Transactional(readOnly = true)
-    public OrderDto allOrdersByUserId(UUID userId)
+    public List<OrderDto> allOrdersByUserId(final UUID userId)
     {
-        final UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return orderRepository.findAllOrdersByUserId(userId).stream()
+                .map(this::convertToDto)
+                .toList();
+    }
 
-        return null;
+    @Transactional
+    public void cancelOrderByUserId(final UUID userId, final UUID orderId)
+    {
+        final Optional<OrderEntity> order = orderRepository.findById(orderId);
+
+        if(order.isPresent())
+        {
+            OrderEntity orderEntity = order.get();
+
+            if(orderEntity.getUser().getId().equals(userId))
+            {
+                orderEntity.setOrderStatus(OrderStatusEnums.CANCELLED);
+            }
+        }
+        else
+        {
+            throw new ResourceNotFoundException("Order not found");
+        }
     }
 
     private OrderDto convertToDto(final OrderEntity orderEntity)

@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -31,9 +32,17 @@ public class OrderController
         return new ResponseEntity<>(orderService.orderById(orderId), HttpStatus.OK);
     }
 
-    @GetMapping(value = "/user/{userId}")
-    public ResponseEntity<OrderDto> getAllOrdersByUserId(@PathVariable final UUID userId)
+    @GetMapping(value = "/allOrders/user/{userId}")
+    public ResponseEntity<List<OrderDto>> getAllOrdersByUserId(@PathVariable final UUID userId)
     {
         return new ResponseEntity<>(orderService.allOrdersByUserId(userId), HttpStatus.OK);
+    }
+
+    @PatchMapping(value = "/cancelOrder/{userId}/{orderId}")
+    public ResponseEntity<String> cancelOrderByUserId(final @PathVariable UUID userId, final @PathVariable UUID orderId)
+    {
+        orderService.cancelOrderByUserId(userId, orderId);
+
+        return new ResponseEntity<>("Order is cancelled",HttpStatus.OK);
     }
 }

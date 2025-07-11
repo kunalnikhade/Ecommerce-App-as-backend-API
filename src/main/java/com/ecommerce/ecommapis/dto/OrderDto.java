@@ -2,9 +2,7 @@ package com.ecommerce.ecommapis.dto;
 
 import com.ecommerce.ecommapis.enumerations.OrderStatusEnums;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.Date;
 import java.util.List;
@@ -12,7 +10,8 @@ import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
+@Getter
+@Setter
 public class OrderDto
 {
     @NotNull(message = "Order date must not be null")

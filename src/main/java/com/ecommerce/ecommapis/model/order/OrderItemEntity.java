@@ -1,10 +1,8 @@
-package com.ecommerce.ecommapis.model;
+package com.ecommerce.ecommapis.model.order;
 
+import com.ecommerce.ecommapis.model.ProductEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.UUID;
 

@@ -2,6 +2,7 @@ package com.ecommerce.ecommapis.services;
 
 import com.ecommerce.ecommapis.dto.AddressDto;
 import com.ecommerce.ecommapis.exception.ResourceNotFoundException;
+import com.ecommerce.ecommapis.exception.UserNameNotFoundException;
 import com.ecommerce.ecommapis.model.AddressEntity;
 import com.ecommerce.ecommapis.model.UserEntity;
 import com.ecommerce.ecommapis.repositories.AddressRepository;
@@ -9,8 +10,7 @@ import com.ecommerce.ecommapis.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class AddressService
@@ -105,7 +105,7 @@ public class AddressService
         addressEntity.setPhoneNumber(addressDto.getPhoneNumber());
 
         final UserEntity user = userRepository.findById(addressDto.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + addressDto.getUserId()));
+                .orElseThrow(() -> new UserNameNotFoundException("User not found with ID: " + addressDto.getUserId()));
 
         addressEntity.setUser(user);
 

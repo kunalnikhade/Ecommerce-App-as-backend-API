@@ -1,17 +1,13 @@
-package com.ecommerce.ecommapis.model;
+package com.ecommerce.ecommapis.model.order;
 
 import com.ecommerce.ecommapis.enumerations.OrderStatusEnums;
+import com.ecommerce.ecommapis.model.UserEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Table(name = "orders")
@@ -38,11 +34,17 @@ public class OrderEntity
     @Column(name = "orderTotal")
     private Double orderTotal;
 
+    @Column(name = "delivery_charge")
+    private double deliveryCharge;
+
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private UserEntity user;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItemEntity> orderItems;
+
+    @Column(name = "razorpay_order_id")
+    private String razorpayOrderId;
 }
 

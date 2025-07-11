@@ -1,7 +1,7 @@
-package com.ecommerce.ecommapis.config;
+package com.ecommerce.ecommapis.config.auth;
 
-import com.ecommerce.ecommapis.services.JwtService;
-import com.ecommerce.ecommapis.services.MyUserDetailsService;
+import com.ecommerce.ecommapis.services.auth.JwtService;
+import com.ecommerce.ecommapis.services.auth.MyUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

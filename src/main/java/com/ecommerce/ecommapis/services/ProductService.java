@@ -8,14 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.UUID;
-import java.util.logging.Logger;
+import java.util.*;
 
 @Service
 public class ProductService
 {
-    private final static Logger log = Logger.getLogger(ProductService.class.getName());
     private final ProductRepository productRepository;
 
     @Autowired
@@ -27,10 +24,9 @@ public class ProductService
     @Transactional
     public ProductDto addProducts(final ProductDto productDto)
     {
-        ProductEntity productEntity = convertToEntity(productDto);
-        productEntity = productRepository.save(productEntity);
+        final ProductEntity productEntity = convertToEntity(productDto);
 
-        return convertToDto(productEntity);
+        return convertToDto(productRepository.save(productEntity));
     }
 
     @Transactional

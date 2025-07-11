@@ -15,3 +15,6 @@ HELP.md
 
 # target
 target/
+
+# env file
+.env

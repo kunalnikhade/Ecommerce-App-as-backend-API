@@ -1,7 +1,6 @@
-package com.ecommerce.ecommapis.services;
+package com.ecommerce.ecommapis.services.auth;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,9 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 @Service
@@ -22,7 +19,7 @@ public class JwtService
 
     public String generateToken(final String username, final String role)
     {
-        Map<String, Object> claims = new HashMap<>();
+        final Map<String, Object> claims = new HashMap<>();
 
         claims.put("role", role); // add role to the JWT claims
 
@@ -40,7 +37,8 @@ public class JwtService
 
     private SecretKey getKey()
     {
-        byte[] KeyBytes = Decoders.BASE64.decode(secretKey);
+        final byte[] KeyBytes = Decoders.BASE64.decode(secretKey);
+
         return Keys.hmacShaKeyFor(KeyBytes);
     }
 
@@ -53,6 +51,7 @@ public class JwtService
     private <T> T extractClaim(final String jwtToken, final Function<Claims, T> claimResolver)
     {
         final Claims claims = extractAllClaims(jwtToken);
+
         return claimResolver.apply(claims);
     }
 

@@ -1,4 +1,4 @@
-package com.ecommerce.ecommapis.config;
+package com.ecommerce.ecommapis.config.auth;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -35,9 +35,10 @@ public class SecurityConfig
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtFilter jwtFilter) throws Exception
+    public SecurityFilterChain securityFilterChain(final HttpSecurity http, final JwtFilter jwtFilter) throws Exception
     {
         return http
+                .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("/api/auth/**")
@@ -57,7 +58,7 @@ public class SecurityConfig
     @Bean
     public AuthenticationProvider authenticationProvider()
     {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        final DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
 
         provider.setUserDetailsService(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder());
@@ -66,7 +67,7 @@ public class SecurityConfig
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception
+    public AuthenticationManager authenticationManager(final AuthenticationConfiguration config) throws Exception
     {
         return config.getAuthenticationManager();
     }

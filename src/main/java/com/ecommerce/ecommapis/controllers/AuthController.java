@@ -1,19 +1,15 @@
 package com.ecommerce.ecommapis.controllers;
 
-import com.ecommerce.ecommapis.dto.LoginRequest;
-import com.ecommerce.ecommapis.dto.RegisterRequest;
+import com.ecommerce.ecommapis.dto.auth.*;
 import com.ecommerce.ecommapis.model.UserEntity;
-import com.ecommerce.ecommapis.services.AuthService;
+import com.ecommerce.ecommapis.services.auth.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(path = "/api/auth")
+@CrossOrigin(origins = "http://localhost:192.168.137.133:5000")
 public class AuthController
 {
     private final AuthService authService;

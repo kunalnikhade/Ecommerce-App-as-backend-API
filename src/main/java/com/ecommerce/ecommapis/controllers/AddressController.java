@@ -2,14 +2,10 @@ package com.ecommerce.ecommapis.controllers;
 
 import com.ecommerce.ecommapis.dto.AddressDto;
 import com.ecommerce.ecommapis.services.AddressService;
-import jakarta.servlet.ServletResponse;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.UUID;
-
+import java.util.*;
 @RestController
 @RequestMapping(path = "/api/address")
 public class AddressController

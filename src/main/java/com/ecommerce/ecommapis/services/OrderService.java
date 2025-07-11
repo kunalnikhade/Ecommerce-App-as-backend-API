@@ -1,14 +1,14 @@
 package com.ecommerce.ecommapis.services;
 
-import com.ecommerce.ecommapis.dto.OrderDto;
-import com.ecommerce.ecommapis.dto.OrderItemDto;
+import com.ecommerce.ecommapis.dto.order.*;
 import com.ecommerce.ecommapis.enumerations.OrderStatusEnums;
-import com.ecommerce.ecommapis.exception.ResourceNotFoundException;
+import com.ecommerce.ecommapis.exception.*;
 import com.ecommerce.ecommapis.model.*;
-import com.ecommerce.ecommapis.repositories.CartRepository;
-import com.ecommerce.ecommapis.repositories.OrderRepository;
-import com.ecommerce.ecommapis.repositories.ProductRepository;
-import com.ecommerce.ecommapis.repositories.UserRepository;
+import com.ecommerce.ecommapis.model.cart.*;
+import com.ecommerce.ecommapis.model.order.*;
+import com.ecommerce.ecommapis.repositories.*;
+import com.razorpay.*;
+import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,20 +20,20 @@ public class OrderService
     private final OrderRepository orderRepository;
     private final CartRepository cartRepository;
     private final ProductRepository productRepository;
-    private final UserRepository userRepository;
     private final CartService cartService;
+    private final RazorpayClient razorpayClient;
 
     public OrderService(final OrderRepository orderRepository,
                         final CartRepository cartRepository,
                         final ProductRepository productRepository,
-                        final UserRepository userRepository,
-                        final CartService cartService)
+                        final CartService cartService,
+                        final RazorpayClient razorpayClient)
     {
         this.orderRepository = orderRepository;
         this.cartRepository = cartRepository;
         this.productRepository = productRepository;
-        this.userRepository = userRepository;
         this.cartService = cartService;
+        this.razorpayClient = razorpayClient;
     }
 
     @Transactional
@@ -55,14 +55,14 @@ public class OrderService
 
         final List<OrderItemEntity> orderItems = new ArrayList<>();
 
-        for (CartItemEntity cartItem : cartItems)
+        for (final CartItemEntity cartItem : cartItems)
         {
             final ProductEntity product = productRepository.findById(cartItem.getProduct().getId())
                     .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
             if (product.getQuantity() < cartItem.getQuantity())
             {
-                throw new ResourceNotFoundException("Insufficient stock for product: " + product.getId());
+                throw new InsufficientQuantityException("Insufficient stock for product: " + product.getId());
             }
 
             // Subtract stock
@@ -84,16 +84,44 @@ public class OrderService
         // Create and save order
         final OrderEntity order = new OrderEntity();
         order.setUser(user);
+        order.setOrderId(order.getOrderId());
         order.setOrderDate(new Date());
         order.setOrderStatus(OrderStatusEnums.PENDING);
-        order.setOrderTotal(totalAmount);
 
-        for (OrderItemEntity item : orderItems)
+        // Add delivery charges
+        double deliveryCharges = totalAmount < 700 ? 40.0 : 0.0;
+        double finalTotalAmount = totalAmount + deliveryCharges;
+
+        order.setOrderTotal(finalTotalAmount);
+        order.setDeliveryCharge(deliveryCharges);
+
+        for (final OrderItemEntity item : orderItems)
         {
             item.setOrder(order); // bi-directional mapping
         }
 
         order.setOrderItems(orderItems);
+
+        // Create Razorpay Order
+        try
+        {
+            int amountInPaise = (int) (finalTotalAmount * 100);
+
+            final JSONObject options = new JSONObject();
+
+            options.put("amount", amountInPaise);
+            options.put("currency", "INR");
+            options.put("receipt", "rcpt_" + UUID.randomUUID().toString().substring(0, 30));
+
+            final Order razorpayOrder = razorpayClient.orders.create(options);
+
+            order.setRazorpayOrderId(razorpayOrder.get("id"));
+
+        }
+        catch (final Exception e)
+        {
+            throw new FailedToCreateException("Failed to create Razorpay order" + e);
+        }
 
         // Save order
         final OrderEntity savedOrder = orderRepository.save(order);
@@ -128,7 +156,7 @@ public class OrderService
 
         if(order.isPresent())
         {
-            OrderEntity orderEntity = order.get();
+            final OrderEntity orderEntity = order.get();
 
             if(orderEntity.getUser().getId().equals(userId))
             {
@@ -145,9 +173,13 @@ public class OrderService
     {
         final OrderDto orderDto = new OrderDto();
 
+        orderDto.setOrderId(orderEntity.getOrderId());
         orderDto.setOrderDate(orderEntity.getOrderDate());
         orderDto.setOrderStatus(orderEntity.getOrderStatus());
         orderDto.setUserId(orderEntity.getUser().getId());
+        orderDto.setRazorpayOrderId(orderEntity.getRazorpayOrderId());
+        orderDto.setAmount((int)(orderEntity.getOrderTotal() * 100));
+        orderDto.setDeliveryCharge(orderEntity.getDeliveryCharge());
 
         // Convert OrderItemEntity list to OrderItemDto list
         if (orderEntity.getOrderItems() != null)
@@ -170,41 +202,43 @@ public class OrderService
         return orderDto;
     }
 
-    private OrderEntity convertToEntity(final OrderDto orderDto)
-    {
-        final OrderEntity orderEntity = new OrderEntity();
-
-        orderEntity.setOrderDate(orderDto.getOrderDate());
-        orderEntity.setOrderStatus(
-                orderDto.getOrderStatus() != null ? orderDto.getOrderStatus() : OrderStatusEnums.PENDING
-        );
-
-        final double total = orderDto.getOrderItems().stream()
-                .mapToDouble(item -> item.getOrderQuantity() * item.getOrderPrice())
-                .sum();
-
-        orderEntity.setOrderTotal(total);
-
-        // map items
-        final List<OrderItemEntity> itemEntities = orderDto.getOrderItems().stream().map(dto ->
-        {
-            final OrderItemEntity item = new OrderItemEntity();
-
-            item.setOrderQuantity(dto.getOrderQuantity());
-            item.setOrderItemPrice(dto.getOrderPrice());
-
-            final ProductEntity product = productRepository.findById(dto.getProductId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-
-            item.setProduct(product);
-            item.setOrder(orderEntity);
-
-            return item;
-
-        }).toList();
-
-        orderEntity.setOrderItems(itemEntities);
-
-        return orderEntity;
-    }
+//    private OrderEntity convertToEntity(final OrderDto orderDto)
+//    {
+//        final OrderEntity orderEntity = new OrderEntity();
+//
+//        orderEntity.setOrderId(orderDto.getOrderId());
+//        orderEntity.setOrderDate(orderDto.getOrderDate());
+//        orderEntity.setOrderStatus(
+//                orderDto.getOrderStatus() != null ? orderDto.getOrderStatus() : OrderStatusEnums.PENDING
+//        );
+//
+//        final double total = orderDto.getOrderItems().stream()
+//                .mapToDouble(item -> item.getOrderQuantity() * item.getOrderPrice())
+//                .sum();
+//
+//        orderEntity.setOrderTotal(total);
+//        orderEntity.setDeliveryCharge(orderDto.getDeliveryCharge());
+//
+//        // map items
+//        final List<OrderItemEntity> itemEntities = orderDto.getOrderItems().stream().map(dto ->
+//        {
+//            final OrderItemEntity item = new OrderItemEntity();
+//
+//            item.setOrderQuantity(dto.getOrderQuantity());
+//            item.setOrderItemPrice(dto.getOrderPrice());
+//
+//            final ProductEntity product = productRepository.findById(dto.getProductId())
+//                    .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+//
+//            item.setProduct(product);
+//            item.setOrder(orderEntity);
+//
+//            return item;
+//
+//        }).toList();
+//
+//        orderEntity.setOrderItems(itemEntities);
+//
+//        return orderEntity;
+//    }
 }

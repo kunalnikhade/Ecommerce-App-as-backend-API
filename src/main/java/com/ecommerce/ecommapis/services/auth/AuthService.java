@@ -1,10 +1,11 @@
-package com.ecommerce.ecommapis.services;
+package com.ecommerce.ecommapis.services.auth;
 
-import com.ecommerce.ecommapis.dto.LoginRequest;
-import com.ecommerce.ecommapis.dto.RegisterRequest;
+import com.ecommerce.ecommapis.dto.auth.LoginRequest;
+import com.ecommerce.ecommapis.dto.auth.RegisterRequest;
 import com.ecommerce.ecommapis.enumerations.UserRole;
 import com.ecommerce.ecommapis.model.UserEntity;
 import com.ecommerce.ecommapis.repositories.UserRepository;
+import org.apache.logging.log4j.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,13 +19,18 @@ import java.util.Optional;
 @Service
 public class AuthService
 {
+    private final static Logger log = LogManager.getLogger(AuthService.class);
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
 
     @Autowired
-    public AuthService(final UserRepository userRepository, final PasswordEncoder passwordEncoder, final AuthenticationManager authenticationManager, final JwtService jwtService)
+    public AuthService(final UserRepository userRepository,
+                       final PasswordEncoder passwordEncoder,
+                       final AuthenticationManager authenticationManager,
+                       final JwtService jwtService)
     {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -42,6 +48,8 @@ public class AuthService
         user.setMobileNumber(registerRequest.getMobileNumber());
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
         user.setRole(UserRole.USER);
+
+        log.info("{}",user);
 
         return userRepository.save(user);
     }
@@ -63,6 +71,8 @@ public class AuthService
             if (optionalUser.isPresent())
             {
                 final UserEntity user = optionalUser.get();
+
+                log.info("{}",user);
 
                 return jwtService.generateToken(userDetails.getUsername(), user.getRole().name());
             }

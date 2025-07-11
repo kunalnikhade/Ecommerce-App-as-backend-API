@@ -1,10 +1,9 @@
-package com.ecommerce.ecommapis.dto;
+package com.ecommerce.ecommapis.dto.cart;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Getter
 @Setter

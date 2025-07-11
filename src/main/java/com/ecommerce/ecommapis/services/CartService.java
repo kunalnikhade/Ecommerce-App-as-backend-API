@@ -1,6 +1,7 @@
 package com.ecommerce.ecommapis.services;
 
 import com.ecommerce.ecommapis.dto.CartDto;
+import com.ecommerce.ecommapis.dto.CartItemDto;
 import com.ecommerce.ecommapis.exception.ResourceNotFoundException;
 import com.ecommerce.ecommapis.exception.UserNameNotFoundException;
 import com.ecommerce.ecommapis.model.CartEntity;
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class CartService
@@ -42,16 +44,7 @@ public class CartService
         final UserEntity user = userRepository.findById(cartDto.getUserId())
                 .orElseThrow(() -> new UserNameNotFoundException("User Not Found"));
 
-        final ProductEntity product = productRepository.findById(cartDto.getProductId())
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-
-        if (product.getQuantity() == null || product.getQuantity() < cartDto.getQuantity())
-        {
-            throw new ResourceNotFoundException("Insufficient product quantity available");
-        }
-
-        // Find or create cart
-        CartEntity cartEntity = cartRepository.findByUser(user).orElseGet(() ->
+        final CartEntity cartEntity = cartRepository.findByUser(user).orElseGet(() ->
         {
             final CartEntity newCart = new CartEntity();
 
@@ -61,26 +54,44 @@ public class CartService
             return newCart;
         });
 
-        // Check if product already exists in cart
-        Optional<CartItemEntity> existingItemOpt = cartEntity.getCartItems().stream()
-                .filter(item -> item.getProduct().getId().equals(cartDto.getProductId()))
-                .findFirst();
-
-        if (existingItemOpt.isPresent())
+        for (CartItemDto itemDto : cartDto.getCartItems())
         {
-            final CartItemEntity existingItem = existingItemOpt.get();
-            existingItem.setQuantity(existingItem.getQuantity() + cartDto.getQuantity());
-        }
-        else
-        {
-            final CartItemEntity newItem = CartItemEntity.builder()
-                    .cart(cartEntity)
-                    .product(product)
-                    .quantity(cartDto.getQuantity())
-                    .price(product.getPPrice())
-                    .build();
+            final UUID productId = itemDto.getProductId();
+            final int quantity = itemDto.getQuantity();
 
-            cartEntity.getCartItems().add(newItem);
+            final ProductEntity product = productRepository.findById(productId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Product not found with ID: " + productId));
+
+            if (product.getQuantity() == null || product.getQuantity() < quantity)
+            {
+                throw new ResourceNotFoundException("Insufficient quantity for product ID: " + productId);
+            }
+
+            final Optional<CartItemEntity> existingItemOpt = cartEntity.getCartItems().stream()
+                    .filter(item -> item.getProduct().getId().equals(productId))
+                    .findFirst();
+
+            if (existingItemOpt.isPresent())
+            {
+                final CartItemEntity existingItem = existingItemOpt.get();
+                existingItem.setQuantity(existingItem.getQuantity() + quantity);
+            }
+            else
+            {
+                if (quantity <= 0)
+                {
+                    throw new ResourceNotFoundException("Product quantity must be greater than 0");
+                }
+
+                final CartItemEntity newItem = CartItemEntity.builder()
+                        .cart(cartEntity)
+                        .product(product)
+                        .quantity(quantity)
+                        .price(product.getPPrice())
+                        .build();
+
+                cartEntity.getCartItems().add(newItem);
+            }
         }
 
         return convertToDto(cartRepository.save(cartEntity));
@@ -97,7 +108,34 @@ public class CartService
                 .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundException("Cart item not found"));
 
-        cartItem.setQuantity(cartItem.getQuantity() + cartDto.getQuantity());
+        // Find the corresponding CartItemDto from input DTO
+        final CartItemDto inputItem = cartDto.getCartItems().stream()
+                .filter(item -> item.getProductId().equals(cartItem.getProduct().getId()))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("No matching cart item data found in request"));
+
+        final int requestedChange = inputItem.getQuantity();
+
+        if (requestedChange == 0)
+        {
+            throw new ResourceNotFoundException("Quantity change must not be zero");
+        }
+
+        final int updatedQuantity = cartItem.getQuantity() + requestedChange;
+
+        if (updatedQuantity < 0)
+        {
+            throw new ResourceNotFoundException("Resulting quantity cannot be negative");
+        }
+
+        if (updatedQuantity == 0)
+        {
+            cart.getCartItems().remove(cartItem); // Remove item from cart
+        }
+        else
+        {
+            cartItem.setQuantity(updatedQuantity); // Update quantity
+        }
 
         return convertToDto(cartRepository.save(cart));
     }
@@ -107,18 +145,18 @@ public class CartService
     {
         return cartRepository.findAll().stream()
                 .map(this::convertToDto)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @Transactional
     public void removeProductFromCart(final UUID cartId, final UUID cartItemId)
     {
         final CartEntity cart = cartRepository.findById(cartId)
-                .orElseThrow(() -> new ResourceNotFoundException("Cart item not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
 
         final CartItemEntity removeCartItem = cart.getCartItems().stream()
-                        .filter(item -> item.getId().equals(cartItemId))
-                        .findFirst()
+                .filter(item -> item.getId().equals(cartItemId))
+                .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundException("Cart item not found"));
 
         cart.getCartItems().remove(removeCartItem);
@@ -126,46 +164,61 @@ public class CartService
         cartRepository.save(cart);
     }
 
+        @Transactional
+        public void clearCartByCartId(UUID cartId)
+        {
+            final CartEntity cart = cartRepository.findById(cartId)
+                    .orElseThrow(() -> new UserNameNotFoundException("User Not Found"));
+
+            cart.getCartItems().clear();
+
+            cartRepository.save(cart);
+        }
+
     private CartDto convertToDto(final CartEntity cartEntity)
     {
         final CartDto cartDto = new CartDto();
 
         cartDto.setUserId(cartEntity.getUser().getId());
 
-        if (!cartEntity.getCartItems().isEmpty())
+        final List<CartItemDto> itemDtos = cartEntity.getCartItems().stream().map(item ->
         {
-            CartItemEntity item = cartEntity.getCartItems().get(0);
-            cartDto.setProductId(item.getProduct().getId());
-            cartDto.setQuantity(item.getQuantity());
-        }
+            final CartItemDto itemDto = new CartItemDto();
+
+            itemDto.setProductId(item.getProduct().getId());
+            itemDto.setQuantity(item.getQuantity());
+
+            return itemDto;
+
+        }).collect(Collectors.toList());
+
+        cartDto.setCartItems(itemDtos);
 
         return cartDto;
     }
 
     private CartEntity convertToEntity(final CartDto cartDto)
     {
-        // Fetch user and product entities using IDs from DTO
-        UserEntity user = userRepository.findById(cartDto.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        final UserEntity user = userRepository.findById(cartDto.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        ProductEntity product = productRepository.findById(cartDto.getProductId())
-                .orElseThrow(() -> new RuntimeException("Product not found"));
-
-        // Create CartEntity
-        CartEntity cartEntity = new CartEntity();
-
-        cartEntity.setCartId(UUID.randomUUID());
+        final CartEntity cartEntity = new CartEntity();
         cartEntity.setUser(user);
 
-        // Create CartItemEntity
-        CartItemEntity item = CartItemEntity.builder()
-                .cart(cartEntity)
-                .product(product)
-                .quantity(cartDto.getQuantity())
-                .price(product.getPPrice())
-                .build();
+        final List<CartItemEntity> itemEntities = cartDto.getCartItems().stream().map(itemDto ->
+        {
+            final ProductEntity product = productRepository.findById(itemDto.getProductId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
-        cartEntity.setCartItems(List.of(item));
+            return CartItemEntity.builder()
+                    .cart(cartEntity)
+                    .product(product)
+                    .quantity(itemDto.getQuantity())
+                    .price(product.getPPrice())
+                    .build();
+        }).collect(Collectors.toList());
+
+        cartEntity.setCartItems(itemEntities);
 
         return cartEntity;
     }

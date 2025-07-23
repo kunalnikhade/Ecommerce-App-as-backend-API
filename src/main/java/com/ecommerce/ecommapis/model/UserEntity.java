@@ -49,6 +49,9 @@ public class UserEntity implements UserDetails
             name = "password")
     private String password;
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private ForgotPasswordEntity forgotPassword;
+
     @Enumerated(EnumType.STRING)
     private UserRole role;
 

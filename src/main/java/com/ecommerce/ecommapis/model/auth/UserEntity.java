@@ -1,4 +1,4 @@
-package com.ecommerce.ecommapis.model;
+package com.ecommerce.ecommapis.model.auth;
 
 import com.ecommerce.ecommapis.enumerations.UserRole;
 import jakarta.persistence.*;

@@ -1,7 +1,7 @@
-package com.ecommerce.ecommapis.controllers;
+package com.ecommerce.ecommapis.controllers.auth;
 
 import com.ecommerce.ecommapis.dto.auth.*;
-import com.ecommerce.ecommapis.model.UserEntity;
+import com.ecommerce.ecommapis.model.auth.UserEntity;
 import com.ecommerce.ecommapis.services.auth.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;

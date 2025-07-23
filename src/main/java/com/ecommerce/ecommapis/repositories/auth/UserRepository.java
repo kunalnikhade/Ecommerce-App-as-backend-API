@@ -1,6 +1,6 @@
-package com.ecommerce.ecommapis.repositories;
+package com.ecommerce.ecommapis.repositories.auth;
 
-import com.ecommerce.ecommapis.model.UserEntity;
+import com.ecommerce.ecommapis.model.auth.UserEntity;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

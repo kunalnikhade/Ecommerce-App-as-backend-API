@@ -4,6 +4,7 @@ import com.ecommerce.ecommapis.dto.order.*;
 import com.ecommerce.ecommapis.enumerations.OrderStatusEnums;
 import com.ecommerce.ecommapis.exception.*;
 import com.ecommerce.ecommapis.model.*;
+import com.ecommerce.ecommapis.model.auth.UserEntity;
 import com.ecommerce.ecommapis.model.cart.*;
 import com.ecommerce.ecommapis.model.order.*;
 import com.ecommerce.ecommapis.repositories.*;

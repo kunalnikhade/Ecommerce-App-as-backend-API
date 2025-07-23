@@ -1,7 +1,7 @@
-package com.ecommerce.ecommapis.controllers;
+package com.ecommerce.ecommapis.controllers.auth;
 
-import com.ecommerce.ecommapis.dto.ResetPasswordDto;
-import com.ecommerce.ecommapis.services.ResetPasswordService;
+import com.ecommerce.ecommapis.dto.auth.ResetPasswordDto;
+import com.ecommerce.ecommapis.services.auth.ResetPasswordService;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 

@@ -1,7 +1,7 @@
-package com.ecommerce.ecommapis.controllers;
+package com.ecommerce.ecommapis.controllers.auth;
 
-import com.ecommerce.ecommapis.dto.ChangePasswordDto;
-import com.ecommerce.ecommapis.services.forgotPassword.ForgotPasswordService;
+import com.ecommerce.ecommapis.dto.auth.ChangePasswordDto;
+import com.ecommerce.ecommapis.services.auth.ForgotPasswordService;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 

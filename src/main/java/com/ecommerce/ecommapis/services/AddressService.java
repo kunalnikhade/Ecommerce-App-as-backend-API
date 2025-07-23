@@ -4,9 +4,9 @@ import com.ecommerce.ecommapis.dto.AddressDto;
 import com.ecommerce.ecommapis.exception.ResourceNotFoundException;
 import com.ecommerce.ecommapis.exception.UserNameNotFoundException;
 import com.ecommerce.ecommapis.model.AddressEntity;
-import com.ecommerce.ecommapis.model.UserEntity;
+import com.ecommerce.ecommapis.model.auth.UserEntity;
 import com.ecommerce.ecommapis.repositories.AddressRepository;
-import com.ecommerce.ecommapis.repositories.UserRepository;
+import com.ecommerce.ecommapis.repositories.auth.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

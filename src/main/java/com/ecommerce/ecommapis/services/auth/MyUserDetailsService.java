@@ -1,7 +1,7 @@
 package com.ecommerce.ecommapis.services.auth;
 
 import com.ecommerce.ecommapis.exception.UserNameNotFoundException;
-import com.ecommerce.ecommapis.repositories.UserRepository;
+import com.ecommerce.ecommapis.repositories.auth.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;

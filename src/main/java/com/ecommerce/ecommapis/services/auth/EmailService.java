@@ -1,4 +1,4 @@
-package com.ecommerce.ecommapis.services.forgotPassword;
+package com.ecommerce.ecommapis.services.auth;
 
 import com.ecommerce.ecommapis.dto.MailBody;
 import org.springframework.beans.factory.annotation.Value;

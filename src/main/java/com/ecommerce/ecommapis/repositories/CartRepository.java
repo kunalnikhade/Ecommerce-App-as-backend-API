@@ -1,7 +1,7 @@
 package com.ecommerce.ecommapis.repositories;
 
 import com.ecommerce.ecommapis.model.cart.CartEntity;
-import com.ecommerce.ecommapis.model.UserEntity;
+import com.ecommerce.ecommapis.model.auth.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

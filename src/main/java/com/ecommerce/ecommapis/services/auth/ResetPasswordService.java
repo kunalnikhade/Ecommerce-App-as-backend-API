@@ -1,9 +1,9 @@
-package com.ecommerce.ecommapis.services;
+package com.ecommerce.ecommapis.services.auth;
 
-import com.ecommerce.ecommapis.dto.ResetPasswordDto;
+import com.ecommerce.ecommapis.dto.auth.ResetPasswordDto;
 import com.ecommerce.ecommapis.exception.ResourceNotFoundException;
-import com.ecommerce.ecommapis.model.UserEntity;
-import com.ecommerce.ecommapis.repositories.UserRepository;
+import com.ecommerce.ecommapis.model.auth.UserEntity;
+import com.ecommerce.ecommapis.repositories.auth.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 

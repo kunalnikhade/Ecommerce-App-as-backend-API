@@ -1,4 +1,4 @@
-package com.ecommerce.ecommapis.model;
+package com.ecommerce.ecommapis.model.auth;
 
 import jakarta.persistence.*;
 import lombok.*;

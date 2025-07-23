@@ -1,7 +1,7 @@
 package com.ecommerce.ecommapis.model.order;
 
 import com.ecommerce.ecommapis.enumerations.OrderStatusEnums;
-import com.ecommerce.ecommapis.model.UserEntity;
+import com.ecommerce.ecommapis.model.auth.UserEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;

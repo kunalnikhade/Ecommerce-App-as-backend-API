@@ -1,4 +1,4 @@
-package com.ecommerce.ecommapis.dto;
+package com.ecommerce.ecommapis.dto.auth;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.*;

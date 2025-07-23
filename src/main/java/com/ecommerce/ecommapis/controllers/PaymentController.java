@@ -2,8 +2,7 @@ package com.ecommerce.ecommapis.controllers;
 
 import com.ecommerce.ecommapis.dto.PaymentDto;
 import com.ecommerce.ecommapis.services.PaymentService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -19,6 +18,7 @@ public class PaymentController
         this.paymentService = paymentService;
     }
 
+    @CrossOrigin(origins = "http://localhost:63342")
     @PostMapping(value = "/order/{orderId}")
     public ResponseEntity<PaymentDto> makePayment(@RequestBody final PaymentDto paymentDto,
                                                   @RequestParam final UUID userId,

@@ -1,13 +1,11 @@
 package com.ecommerce.ecommapis.controllers;
 
-import com.ecommerce.ecommapis.dto.OrderDto;
+import com.ecommerce.ecommapis.dto.order.OrderDto;
 import com.ecommerce.ecommapis.services.OrderService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @RequestMapping(path = "/api/order")
@@ -20,6 +18,7 @@ public class OrderController
         this.orderService = orderService;
     }
 
+    @CrossOrigin(origins = "http://localhost:63342")
     @PostMapping(value = "/placeOrder/{cartId}")
     public ResponseEntity<OrderDto> getPlaceAnOrder(@PathVariable final UUID cartId)
     {

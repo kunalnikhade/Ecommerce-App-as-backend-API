@@ -1,6 +1,7 @@
 package com.ecommerce.ecommapis.model;
 
 import com.ecommerce.ecommapis.enumerations.PaymentStatus;
+import com.ecommerce.ecommapis.model.order.OrderEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -40,4 +41,13 @@ public class PaymentEntity
 
     @Column(name = "paymentDateTime")
     private LocalDateTime paymentDateTime;
+
+    @Column(name = "razorpay_order_id")
+    private String razorpayOrderId;
+
+    @Column(name = "razorpay_payment_id")
+    private String razorpayPaymentId;
+
+    @Column(name = "razorpay_signature")
+    private String razorpaySignature;
 }

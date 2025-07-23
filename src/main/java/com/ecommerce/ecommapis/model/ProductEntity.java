@@ -1,12 +1,10 @@
 package com.ecommerce.ecommapis.model;
 
+import com.ecommerce.ecommapis.model.cart.CartItemEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @AllArgsConstructor

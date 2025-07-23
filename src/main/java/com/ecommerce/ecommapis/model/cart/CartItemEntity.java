@@ -1,5 +1,6 @@
-package com.ecommerce.ecommapis.model;
+package com.ecommerce.ecommapis.model.cart;
 
+import com.ecommerce.ecommapis.model.ProductEntity;
 import jakarta.persistence.*;
 import lombok.*;
 

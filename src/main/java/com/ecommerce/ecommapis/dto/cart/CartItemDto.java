@@ -1,4 +1,4 @@
-package com.ecommerce.ecommapis.dto;
+package com.ecommerce.ecommapis.dto.cart;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.*;

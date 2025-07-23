@@ -12,27 +12,27 @@ import java.util.UUID;
 @Builder
 public class AddressDto
 {
-    @NotNull
+    @NotNull(message = "Full name is required")
     private String fullName;
 
-    @NotNull
+    @NotNull(message = "Street is required")
     private String street;
 
-    @NotNull
+    @NotNull(message = "City is required")
     private String city;
 
-    @NotNull
+    @NotNull(message = "State is required")
     private String state;
 
-    @NotNull
+    @NotNull(message = "Country is required")
     private String country;
 
-    @NotNull
+    @NotNull(message = "Postal code is required")
     private String postalCode;
 
-    @NotNull
+    @NotNull(message = "Phone number is required")
     private String phoneNumber;
 
-    @NotNull
+    @NotNull(message = "User ID is required")
     private UUID userId;
 }

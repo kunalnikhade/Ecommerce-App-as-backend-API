@@ -1,11 +1,10 @@
-package com.ecommerce.ecommapis.model;
+package com.ecommerce.ecommapis.model.cart;
 
+import com.ecommerce.ecommapis.model.auth.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Table(name = "carts")

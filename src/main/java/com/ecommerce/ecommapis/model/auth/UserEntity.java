@@ -1,18 +1,13 @@
-package com.ecommerce.ecommapis.model;
+package com.ecommerce.ecommapis.model.auth;
 
 import com.ecommerce.ecommapis.enumerations.UserRole;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @AllArgsConstructor
@@ -54,9 +49,11 @@ public class UserEntity implements UserDetails
             name = "password")
     private String password;
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private ForgotPasswordEntity forgotPassword;
+
     @Enumerated(EnumType.STRING)
     private UserRole role;
-
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities()

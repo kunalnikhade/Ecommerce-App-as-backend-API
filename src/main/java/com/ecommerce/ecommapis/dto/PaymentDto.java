@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @Builder
 public class PaymentDto
 {
+    @NotNull(message = "Amount is required")
     private Double amount;
 
     @NotNull(message = "Method is required")
@@ -23,4 +24,13 @@ public class PaymentDto
 
     @NotNull(message = "PaymentDateTime is required")
     private LocalDateTime paymentDateTime;
+
+    @NotNull(message = "Razorpay order ID is required")
+    private String razorpayOrderId;
+
+    @NotNull(message = "Razorpay payment ID is required")
+    private String razorpayPaymentId;
+
+    @NotNull(message = "Razorpay signature is required")
+    private String razorpaySignature;
 }

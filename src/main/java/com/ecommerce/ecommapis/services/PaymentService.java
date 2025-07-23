@@ -1,22 +1,26 @@
 package com.ecommerce.ecommapis.services;
 
 import com.ecommerce.ecommapis.dto.PaymentDto;
-import com.ecommerce.ecommapis.enumerations.OrderStatusEnums;
-import com.ecommerce.ecommapis.enumerations.PaymentStatus;
-import com.ecommerce.ecommapis.exception.ResourceNotFoundException;
-import com.ecommerce.ecommapis.model.OrderEntity;
+import com.ecommerce.ecommapis.enumerations.*;
+import com.ecommerce.ecommapis.exception.*;
+import com.ecommerce.ecommapis.model.order.OrderEntity;
 import com.ecommerce.ecommapis.model.PaymentEntity;
-import com.ecommerce.ecommapis.repositories.OrderRepository;
-import com.ecommerce.ecommapis.repositories.PaymentRepository;
+import com.ecommerce.ecommapis.repositories.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
 public class PaymentService
 {
+    @Value("${razorpay.secret}")
+    private String razorpaySecret;
+
     private final PaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
 
@@ -42,16 +46,20 @@ public class PaymentService
         // Prevent duplicate payments
         if (paymentExists)
         {
-            throw new ResourceNotFoundException("Payment has already been processed for this order");
+            throw new PaymentException("Payment has already been processed for this order");
+        }
+
+        // Verify Razorpay Signature
+        if (!isValidSignature(
+                paymentDto.getRazorpayOrderId(),
+                paymentDto.getRazorpayPaymentId(),
+                paymentDto.getRazorpaySignature()))
+        {
+            throw new PaymentException("Invalid Razorpay signature");
         }
 
         // Calculate total amount from order
         double totalAmount = order.getOrderTotal();
-
-        // Add delivery charge if needed
-        double deliveryCharge = totalAmount < 700 ? 40.0 : 0.0;
-
-        totalAmount += deliveryCharge;
 
         final PaymentEntity payment = convertToEntity(paymentDto);
 
@@ -83,6 +91,39 @@ public class PaymentService
         return convertToDto(payment);
     }
 
+    // Razorpay Signature Validator
+    private boolean isValidSignature(final String razorpayOrderId,
+                                     final String razorpayPaymentId,
+                                     final String razorpaySignature)
+    {
+        try
+        {
+            final String payload = razorpayOrderId + "|" + razorpayPaymentId;
+            final Mac mac = Mac.getInstance("HmacSHA256");
+            final SecretKeySpec secretKey = new SecretKeySpec(razorpaySecret.getBytes(), "HmacSHA256");
+            mac.init(secretKey);
+            byte[] digest = mac.doFinal(payload.getBytes());
+
+            // Convert byte[] to HEX string
+            final StringBuilder hexString = new StringBuilder();
+            for (byte b : digest)
+            {
+                final String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1)
+                    hexString.append('0');
+                hexString.append(hex);
+            }
+
+            final String calculatedSignature = hexString.toString();
+
+            return calculatedSignature.equals(razorpaySignature);
+        }
+        catch (final Exception e)
+        {
+            return false;
+        }
+    }
+
     private PaymentDto convertToDto(final PaymentEntity paymentEntity)
     {
         final PaymentDto paymentDto = new PaymentDto();
@@ -91,6 +132,9 @@ public class PaymentService
         paymentDto.setPaymentStatus(paymentEntity.getPaymentStatus());
         paymentDto.setPaymentMethod(paymentEntity.getPaymentMethod());
         paymentDto.setPaymentDateTime(paymentEntity.getPaymentDateTime());
+        paymentDto.setRazorpayPaymentId(paymentEntity.getRazorpayPaymentId());
+        paymentDto.setRazorpayOrderId(paymentEntity.getRazorpayOrderId());
+        paymentDto.setRazorpaySignature(paymentEntity.getRazorpaySignature());
 
         return paymentDto;
     }
@@ -103,6 +147,9 @@ public class PaymentService
         paymentEntity.setPaymentStatus(paymentDto.getPaymentStatus());
         paymentEntity.setPaymentMethod(paymentDto.getPaymentMethod());
         paymentEntity.setPaymentDateTime(LocalDateTime.now());
+        paymentEntity.setRazorpayPaymentId(paymentDto.getRazorpayPaymentId());
+        paymentEntity.setRazorpayOrderId(paymentDto.getRazorpayOrderId());
+        paymentEntity.setRazorpaySignature(paymentDto.getRazorpaySignature());
 
         return paymentEntity;
     }

@@ -1,11 +1,13 @@
 package com.ecommerce.ecommapis.services;
 
 import com.ecommerce.ecommapis.dto.PaymentDto;
+import com.ecommerce.ecommapis.dto.auth.MailBody;
 import com.ecommerce.ecommapis.enumerations.*;
 import com.ecommerce.ecommapis.exception.*;
 import com.ecommerce.ecommapis.model.order.OrderEntity;
 import com.ecommerce.ecommapis.model.PaymentEntity;
 import com.ecommerce.ecommapis.repositories.*;
+import com.ecommerce.ecommapis.services.auth.EmailService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,11 +25,15 @@ public class PaymentService
 
     private final PaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
+    private final EmailService emailService;
 
-    public PaymentService(final PaymentRepository paymentRepository, final OrderRepository orderRepository)
+    public PaymentService(final PaymentRepository paymentRepository,
+                          final OrderRepository orderRepository,
+                          final EmailService emailService)
     {
         this.paymentRepository = paymentRepository;
         this.orderRepository = orderRepository;
+        this.emailService = emailService;
     }
 
     @Transactional
@@ -75,6 +81,57 @@ public class PaymentService
             order.setOrderStatus(OrderStatusEnums.CONFIRMED);
 
             orderRepository.save(order);
+
+            // send confirmation email to user
+            final MailBody mailBody = MailBody.builder()
+                    .to(order.getUser().getEmail())
+                    .subject("Order Confirmed - #" + order.getOrderId())
+                    .body(
+                            "<!DOCTYPE html>" +
+                                    "<html>" +
+                                    "<head>" +
+                                    "<style>" +
+                                    "  body { font-family: Arial, sans-serif; color: #333; background-color: #f9f9f9; }" +
+                                    "  .container { background-color: #fff; padding: 20px; border: 1px solid #eee; max-width: 600px; margin: auto; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.05); }" +
+                                    "  .header { font-size: 24px; margin-bottom: 10px; color: #0000; }" +
+                                    "  .section-title { font-weight: bold; margin-top: 20px; margin-bottom: 10px; }" +
+                                    "  .details { line-height: 1.6; }" +
+                                    "  .footer { margin-top: 30px; font-size: 14px; color: #888; }" +
+                                    "</style>" +
+                                    "</head>" +
+                                    "<body>" +
+                                    "  <div class='container'>" +
+                                    "    <div class='header'>Order Confirmed!</div>" +
+                                    "    <p>Hi <strong>" + order.getUser().getName() + "</strong>,</p>" +
+                                    "    <p>Thank you for your purchase! Your order has been placed successfully.</p>" +
+
+                                    "    <div class='section-title'>🛒 Order Summary</div>" +
+                                    "    <div class='details'>" +
+                                    "      <p><strong>🆔 Order ID:</strong> " + order.getOrderId() + "</p>" +
+                                    "      <p><strong>📅 Order Date:</strong> " + order.getOrderDate() + "</p>" +
+                                    "      <p><strong>💳 Payment Method:</strong> Razorpay</p>" +
+                                    "      <p><strong>💰 Subtotal:</strong> ₹" + String.format("%.2f", totalAmount) + "</p>" +
+                                    "      <p><strong>🚚 Delivery Charge:</strong> ₹" + String.format("%.2f", order.getDeliveryCharge()) + "</p>" +
+                                    "      <hr>" +
+                                    "      <p><strong>🧾 Total Paid:</strong> ₹" + String.format("%.2f", order.getOrderTotal()) + "</p>" +
+                                    "    </div>" +
+
+                                    "    <div class='section-title'>📦 Order Status</div>" +
+                                    "    <p>Your order is <strong>Confirmed</strong>. You will be notified as it moves through the stages:</p>" +
+                                    "    <p>➡ Confirmed → Shipped → Out for Delivery → Delivered</p>" +
+
+                                    "    <p>We’ll send you tracking updates as your order progresses.</p>" +
+
+                                    "    <div class='footer'>" +
+                                    "      <p>Thanks for shopping with us!<br>The E-Commerce Team 🛍️</p>" +
+                                    "    </div>" +
+                                    "  </div>" +
+                                    "</body>" +
+                                    "</html>"
+                    )
+                    .build();
+
+            emailService.sendSimpleMessage(mailBody);
         }
 
         return convertToDto(savedPayment);

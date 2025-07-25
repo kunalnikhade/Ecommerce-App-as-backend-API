@@ -1,8 +1,10 @@
 package com.ecommerce.ecommapis.controllers;
 
 import com.ecommerce.ecommapis.dto.order.OrderDto;
+import com.ecommerce.ecommapis.enumerations.OrderStatusEnums;
 import com.ecommerce.ecommapis.services.OrderService;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -43,5 +45,15 @@ public class OrderController
         orderService.cancelOrderByUserId(userId, orderId);
 
         return new ResponseEntity<>("Order is cancelled",HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping(value = "/admin/{orderId}")
+    public ResponseEntity<String> updateOrderStatus(@PathVariable final UUID orderId,
+                                                    @RequestParam final OrderStatusEnums status)
+    {
+        orderService.updateOrderStatus(orderId, status);
+
+        return new ResponseEntity<>("Order status updated to " + status, HttpStatus.OK);
     }
 }

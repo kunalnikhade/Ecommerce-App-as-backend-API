@@ -1,5 +1,6 @@
 package com.ecommerce.ecommapis.services;
 
+import com.ecommerce.ecommapis.EcommerceApplication;
 import com.ecommerce.ecommapis.dto.cart.CartDto;
 import com.ecommerce.ecommapis.dto.cart.CartItemDto;
 import com.ecommerce.ecommapis.exception.InsufficientQuantityException;
@@ -12,6 +13,7 @@ import com.ecommerce.ecommapis.model.auth.UserEntity;
 import com.ecommerce.ecommapis.repositories.CartRepository;
 import com.ecommerce.ecommapis.repositories.ProductRepository;
 import com.ecommerce.ecommapis.repositories.auth.UserRepository;
+import org.apache.logging.log4j.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +24,8 @@ import java.util.stream.Collectors;
 @Service
 public class CartService
 {
+    private static final Logger logger = LogManager.getLogger(CartService.class);
+
     private final CartRepository cartRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
@@ -125,6 +129,14 @@ public class CartService
             throw new ResourceNotFoundException("Resulting quantity cannot be negative");
         }
 
+        // Added stock check during update
+        final ProductEntity product = cartItem.getProduct();
+
+        if (updatedQuantity > product.getQuantity())
+        {
+            throw new InsufficientQuantityException("Requested quantity exceeds available stock");
+        }
+
         if (updatedQuantity == 0)
         {
             cart.getCartItems().remove(cartItem); // Remove item from cart
@@ -165,7 +177,7 @@ public class CartService
         public void clearCartByCartId(UUID cartId)
         {
             final CartEntity cart = cartRepository.findById(cartId)
-                    .orElseThrow(() -> new UserNameNotFoundException("User Not Found"));
+                    .orElseThrow(() -> new UserNameNotFoundException("Cart Not Found"));
 
             cart.getCartItems().clear();
 

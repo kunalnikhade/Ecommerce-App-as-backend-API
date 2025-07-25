@@ -38,10 +38,35 @@ public class ForgotPasswordService
 
         final Integer generatedOtp = generateOtp();
 
+        // send forgot password email to user
         final MailBody mailBody = MailBody.builder()
                 .to(email)
-                .subject("OTP for Forgot Password Verification")
-                .text("This is a email verification for forgot password is : " + generatedOtp + "\n Do not share it with Anyone !!")
+                .subject("OTP for Password Forgot")
+                .body(
+                        "<!DOCTYPE html>" +
+                                "<html>" +
+                                "<head>" +
+                                "<style>" +
+                                "  body { font-family: Arial, sans-serif; background-color: #f7f7f7; color: #333; padding: 0; margin: 0; }" +
+                                "  .container { background-color: #fff; padding: 20px; border-radius: 8px; max-width: 500px; margin: 30px auto; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); }" +
+                                "  .header { font-size: 20px; font-weight: bold; color: #4CAF50; margin-bottom: 15px; }" +
+                                "  .otp { font-size: 24px; font-weight: bold; color: #000; background-color: #f1f1f1; padding: 10px 20px; border-radius: 5px; display: inline-block; margin: 15px 0; }" +
+                                "  .warning { color: #d32f2f; font-weight: bold; }" +
+                                "  .footer { font-size: 13px; color: #777; margin-top: 25px; }" +
+                                "</style>" +
+                                "</head>" +
+                                "<body>" +
+                                "  <div class='container'>" +
+                                "    <div class='header'>🔐 Password Forgot Request</div>" +
+                                "    <p>We received a request to forgot your password. Use the OTP below to proceed:</p>" +
+                                "    <div class='otp'>" + generatedOtp + "</div>" +
+                                "    <p class='warning'>⚠️ Do not share this OTP with anyone. We never ask for your password or OTP.</p>" +
+                                "    <p>If you did not request this, please ignore this email.</p>" +
+                                "    <div class='footer'>Thank you, <br>The E-Commerce Team</div>" +
+                                "  </div>" +
+                                "</body>" +
+                                "</html>"
+                )
                 .build();
 
         // Check if forgot password already exists for the user

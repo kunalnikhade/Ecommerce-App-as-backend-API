@@ -1,7 +1,7 @@
 package com.ecommerce.ecommapis.services.auth;
 
-import com.ecommerce.ecommapis.dto.*;
 import com.ecommerce.ecommapis.dto.auth.ChangePasswordDto;
+import com.ecommerce.ecommapis.dto.auth.MailBody;
 import com.ecommerce.ecommapis.exception.ResourceNotFoundException;
 import com.ecommerce.ecommapis.model.auth.ForgotPasswordEntity;
 import com.ecommerce.ecommapis.model.auth.UserEntity;

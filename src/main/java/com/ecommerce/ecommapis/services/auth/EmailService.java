@@ -1,6 +1,6 @@
 package com.ecommerce.ecommapis.services.auth;
 
-import com.ecommerce.ecommapis.dto.MailBody;
+import com.ecommerce.ecommapis.dto.auth.MailBody;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
